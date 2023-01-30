@@ -24,7 +24,7 @@ Vue.component('product', {
                 Out of Stock
             </p>
 
-            <detail></detail>
+            <product-details :details="details" />
 
             <div
                     class="color-box"
@@ -36,18 +36,22 @@ Vue.component('product', {
             </div>
             
             <p>Shipping: {{ shipping }}</p>
-            
-            <div class="cart">
-                <p>Cart {{ cart }}</p>
-            </div>
 
             <button
-                    @click="addToCart"
-                    :disabled="!inStock"
-                    :class="{ disabledButton: !inStock }"
+                @click="addToCart"
+                :disabled="!inStock"
+                :class="{ disabledButton: !inStock }"
             >
                 Add to cart
             </button>
+            <button
+                @click="deleteFromCart"
+                :disabled="!inStock"
+                :class="{ disabledButton: !inStock }"
+            >
+                Delete from cart
+            </button>
+
         </div>
     </div>
     `,
@@ -57,6 +61,7 @@ Vue.component('product', {
             brand: "Vue Mastery",
             selectedVariant: 0,
             altText: "A pair of socks",
+            details: ['80% cotton', '20% polyester', 'Gender-neutral'],
             variants: [
                 {
                     variantId: 2234,
@@ -70,13 +75,17 @@ Vue.component('product', {
                     variantImage: './assets/vmSocks-blue-onWhite.jpg',
                     variantQuantity: 0
                 }
-            ],
-            cart: 0,
+            ]
         }
     },
     methods: {
         addToCart() {
-            this.cart += 1
+            this.$emit('add-to-cart', 
+            this.variants[this.selectedVariant].variantId);
+        },
+        deleteFromCart() {
+            this.$emit('delete-from-cart', 
+            this.variants[this.selectedVariant].variantId)
         },
         updateProduct(index) {
             this.selectedVariant = index;
@@ -93,7 +102,7 @@ Vue.component('product', {
             return this.variants[this.selectedVariant].variantQuantity
         },
         onSale() {
-            if (this.variants[this.selectedVariant].variantQuantity > 0 && this.variants[this.selectedVariant].variantQuantity <=10) {
+            if (this.variants[this.selectedVariant].variantQuantity > 0 && this.variants[this.selectedVariant].variantQuantity <= 10) {
                 return true
             } else {
                 return false
@@ -112,25 +121,32 @@ Vue.component('product', {
     }
 })
 
-Vue.component('detail', {
-
+Vue.component('product-details', {
+    props:{
+        details: {
+            type: Array,
+        }
+    },
     template: `
         <ul>
-            <li v-for="detail in details">{{detail}}</li>
+            <li v-for="detail in details">{{ detail }}</li>
         </ul>
     `,
-
-    data() {
-        return {
-            details: ['80% cotton', '20% polyester', 'Gender-neutral'],
-        }
-        // лучше переделать на пропсы
-    }
 })
 
 let app = new Vue({
     el: '#app',
     data: {
-        premium: true
+        premium: true,
+        cart: [],
+    },
+    methods: {
+        updateCart(id) {
+            this.cart.push(id);
+        },
+        deleteCart() {
+            this.cart.pop();
+        }
+        //не понимаю как удалить элемент по значению
     }
 })
