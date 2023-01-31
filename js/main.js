@@ -49,12 +49,14 @@ Vue.component('product', {
             >
                 Delete from cart
             </button>
+            
+            <product-tabs 
+                :reviews="reviews" 
+                :details="details"
+                :shipping="shipping"
+            ></product-tabs>
+            
         </div>
-        
-        <product-tabs 
-            :reviews="reviews" 
-            :details="details"
-        ></product-tabs>
 
     </div>
     `,
@@ -93,8 +95,8 @@ Vue.component('product', {
         },
         updateProduct(index) {
             this.selectedVariant = index;
-        },
-     
+        }
+
     },
     computed: {
         title() {
@@ -118,21 +120,19 @@ Vue.component('product', {
         },
         shipping() {
             if (this.premium) {
-                return eventBus.$emit('Free', productTabs)
+                return 'Free'
             } else {
-                return eventBus.$emit(2.99, productTabs)
+                return 2.99
             }
-        },
-        details() {
-            return eventBus.$emit('details', productTabs)
         }
     }
 })
 
 Vue.component('product-details', {
-    props:{
+    props: {
         details: {
             type: Array,
+            required: false
         }
     },
     template: `
@@ -181,7 +181,6 @@ Vue.component('product-review', {
                     
                     <input type="radio" id="no" value="no" v-model="recomend" />
                     <label for="no">No</label>
-                    <span>{{ recomend }}</span>
                 </p>
             </p>
         
@@ -230,6 +229,13 @@ Vue.component('product-tabs', {
         reviews: {
             type: Array,
             required: false
+        },
+        details: {
+            type: Array,
+            required: false
+        },
+        shipping: {
+            type: '',
         }
      },     
     template: `
@@ -262,7 +268,9 @@ Vue.component('product-tabs', {
                 <product-review></product-review>
             </div>
 
-            
+            <div v-show="selectedTab === 'Shipping'">
+                <p>Shipping: {{ shipping }}</p>
+            </div>
 
             <div v-show="selectedTab === 'Details'">
                 <product-details :details="details"></product-details>
@@ -272,22 +280,16 @@ Vue.component('product-tabs', {
   `,
     data() {
         return {
-            tabs: ['Reviews', 'Make a Review', 'Details'],
+            tabs: ['Reviews', 'Make a Review', 'Shipping', 'Details'],
             selectedTab: 'Reviews',
         }
     },
     mounted() {
         eventBus.$on('review-submitted', productReview => {
             this.reviews.push(productReview)
-        }),
-        eventBus.$emit('')
+        })
     },
  })
- 
-{/* <div v-show="selectedTab === 'Shipping'">
-    <p>Shipping: {{ shipping }}</p>
-</div> */}
-
 
 let app = new Vue({
     el: '#app',
@@ -302,6 +304,5 @@ let app = new Vue({
         deleteCart() {
             this.cart.pop();
         }
-        //не понимаю как удалить элемент по значению
-    }   
+    }
 })
